@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 
@@ -32,7 +33,7 @@ public class Utilisateur implements Serializable {
     private String password;
     @NonNull
     private byte[] profilePic;
-    private final Date dateCmpt = new Date();
+    private final LocalDate dateCmpt = LocalDate.now();
     @NonNull
     private boolean isActive;
     private boolean isVerified;
