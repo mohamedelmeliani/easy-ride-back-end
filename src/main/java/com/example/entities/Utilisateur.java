@@ -16,7 +16,7 @@ public class Utilisateur implements Serializable {
     @NonNull
     private String nom;
     @NonNull
-    private Date date_naissance;
+    private LocalDate date_naissance;
     @NonNull
     private String adresse;
     @NonNull
