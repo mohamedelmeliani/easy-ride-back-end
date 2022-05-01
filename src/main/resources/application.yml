@@ -10,12 +10,13 @@
 
 spring:
   datasource:
-    url: 'jdbc:mysql://localhost:3306/easyride?serverTimezone'
-    username: root
+    url: 'jdbc:postgresql://ec2-54-173-77-184.compute-1.amazonaws.com:5432/dfg3g04640bb4u'
+    username: vmtzyfjqbeztqg
+    password: 48030fcb489d4e2cea66339a71cc7712b329de084692079de5dfb1fb83f094b6
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.PostgreSQL9Dialect
     show-sql: true
     hibernate:
       ddl-auto: create
