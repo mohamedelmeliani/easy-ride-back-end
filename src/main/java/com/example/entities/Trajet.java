@@ -4,19 +4,20 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
+
 @Entity
 @Data @AllArgsConstructor @NoArgsConstructor @RequiredArgsConstructor
 public class Trajet implements Serializable {
-    @Id @GeneratedValue
+    @Id  @GeneratedValue (strategy = GenerationType.IDENTITY)
     private long id;
     @NonNull
     private String villeD;
     @NonNull
     private String villeA;
     @NonNull
-    private Date date;
+    private LocalDate date;
     @NonNull
     private String heure;
     @NonNull
