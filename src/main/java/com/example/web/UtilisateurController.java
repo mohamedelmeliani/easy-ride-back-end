@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,6 +76,7 @@ public class UtilisateurController {
         return service.loadUserByUsername(user.getName()).getToken().equals(token);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/utilisateur/{email}")
     public Utilisateur getUserByEmail(@PathVariable String email){
         return service.loadUserByUsername(email);
@@ -90,11 +92,13 @@ public class UtilisateurController {
         return service.addNewUser(u);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/role")
     public Role addRole(@RequestBody Role role) {
         return service.addNewRole(role);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/addRoleToUser")
     public void addRoleToUser(@RequestBody RoleUserForm form) {
         service.addRoleToUser(form.getEmail(),form.getRole());
@@ -112,15 +116,30 @@ public class UtilisateurController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Action non autorisé");
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/utilisateur/{id}")
     public Utilisateur modifyUtilisateur(@PathVariable Long id,@RequestBody Utilisateur u){
         u.setId(id);
         return utilisateurRepo.save(u);
     }
 
+    @PutMapping(path = "/updateLogged")
+    public Utilisateur modifyLoggedUser(Principal principal,@RequestBody Utilisateur u){
+        Utilisateur user=service.loadUserByUsername(principal.getName());
+        u.setId(user.getId());
+        return utilisateurRepo.save(u);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/utilisateur/{id}")
     public void deleteUser(@PathVariable Long id){
         utilisateurRepo.deleteById(id);
+    }
+
+    @DeleteMapping(path = "/deletelogged")
+    public void deleteLoggedUser(Principal principal){
+        Utilisateur user=service.loadUserByUsername(principal.getName());
+        utilisateurRepo.deleteById(user.getId());
     }
 
 /*    public static byte[] compressBytes(byte[] data) {
