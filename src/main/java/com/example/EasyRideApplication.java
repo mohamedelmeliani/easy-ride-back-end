@@ -35,7 +35,7 @@ public class EasyRideApplication  {
 						,"test","test","test","test","email2","test",false));
 				service.addRoleToUser("email1","USER");
 				service.addRoleToUser("email1","ADMIN");
-				service.addRoleToUser("email2","ADMIN");
+				service.addRoleToUser("email2","USER");
 		};
 	}
 	@Bean

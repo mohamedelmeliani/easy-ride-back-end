@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,114 +32,127 @@ public class UtilisateurController {
     private UtilisateurService service;
     private UtilisateurRepo utilisateurRepo;
 
-    @GetMapping(path = "/refreshToken")
+    @GetMapping(path = "/user/refreshToken")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authToken= request.getHeader(JWTUtilities.AUTH_HEADER);
-        if(authToken!=null&& authToken.startsWith(JWTUtilities.PREFIX)){
-            try{
-                String jwt=authToken.substring(7);
-                Algorithm algorithm=Algorithm.HMAC256(JWTUtilities.SECRET);
-                JWTVerifier jwtVerifier= JWT.require(algorithm).build();
+        String authToken = request.getHeader(JWTUtilities.AUTH_HEADER);
+        if (authToken != null && authToken.startsWith(JWTUtilities.PREFIX)) {
+            try {
+                String jwt = authToken.substring(7);
+                Algorithm algorithm = Algorithm.HMAC256(JWTUtilities.SECRET);
+                JWTVerifier jwtVerifier = JWT.require(algorithm).build();
                 jwtVerifier.verify(jwt);
-                DecodedJWT decodedJWT=jwtVerifier.verify(jwt);
-                String username=decodedJWT.getSubject();
-                Utilisateur utilisateur=service.loadUserByUsername(username);
-                String access_token= JWT.create()
+                DecodedJWT decodedJWT = jwtVerifier.verify(jwt);
+                String username = decodedJWT.getSubject();
+                Utilisateur utilisateur = service.loadUserByUsername(username);
+                String access_token = JWT.create()
                         .withSubject(utilisateur.getEmail())
-                        .withExpiresAt(new Date(System.currentTimeMillis()+JWTUtilities.EXPIRE_ACCESS_TOKEN))
+                        .withExpiresAt(new Date(System.currentTimeMillis() + JWTUtilities.EXPIRE_ACCESS_TOKEN))
                         .withIssuer(request.getRequestURL().toString())
-                        .withClaim("roles",utilisateur.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList()))
+                        .withClaim("roles", utilisateur.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList()))
                         .sign(algorithm);
-                Map<String,String> tokens=new HashMap<>();
-                tokens.put("access_token",access_token);
-                tokens.put("refresh_token",jwt);
+                Map<String, String> tokens = new HashMap<>();
+                tokens.put("access_token", access_token);
+                tokens.put("refresh_token", jwt);
                 response.setContentType("application/json");
                 System.out.println("success");
-                new ObjectMapper().writeValue(response.getOutputStream(),tokens);
-            }catch(Exception e){
-                response.setHeader("Error_Message",e.getMessage());
+                new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+            } catch (Exception e) {
+                response.setHeader("Error_Message", e.getMessage());
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
             }
-        }else
+        } else
             throw new RuntimeException("Error");
     }
 
-    @GetMapping(path = "/utilitsateurs")
-    public List<Utilisateur> getAllUsers(){
+    @GetMapping(path = "/admin/utilitsateurs")
+    public List<Utilisateur> getAllUsers() {
         return service.listUsers();
     }
 
-    @PostMapping(path="/confirmUser")
-    public boolean confirmUser(Principal user,@RequestBody String token){
-        if (service.loadUserByUsername(user.getName()).getToken().equals(token)){
-            service.loadUserByUsername(user.getName()).setEnabled(true);
+    @PostMapping(path = "/user/confirmUser")
+    public Utilisateur confirmUser(Principal principal, @RequestParam(name = "token") String token) {
+        Utilisateur user = service.loadUserByUsername(principal.getName());
+        System.out.println(user.getExpireAt() > System.currentTimeMillis());
+        System.out.println(user.getToken().equals(token));
+        System.out.println(user.getToken());
+        System.out.println(token);
+        if (user.getToken().equals(token) &&
+                user.getExpireAt() > System.currentTimeMillis()) {
+            user.setVerified(true);
+            return utilisateurRepo.save(user);
         }
-        return service.loadUserByUsername(user.getName()).getToken().equals(token);
+        else
+            generateToken(principal);
+            return user;
+
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(path = "/utilisateur/{email}")
-    public Utilisateur getUserByEmail(@PathVariable String email){
+    @GetMapping(path = "/user/generateToken")
+    public Utilisateur generateToken(Principal principal) {
+        Utilisateur user = service.loadUserByUsername(principal.getName());
+        user.setToken("" + ((int) (Math.random() * 9000) + 1000));
+        user.setExpireAt(System.currentTimeMillis() + 5 * 60 * 1000);
+        return utilisateurRepo.save(user);
+    }
+
+    @GetMapping(path = "/admin/utilisateur/{email}")
+    public Utilisateur getUserByEmail(@PathVariable String email) {
         return service.loadUserByUsername(email);
     }
 
-    @GetMapping(path = "/profile")
-    public Utilisateur getLogedUser(Principal user){
+    @GetMapping(path = "/user/profile")
+    public Utilisateur getLogedUser(Principal user) {
         return service.loadUserByUsername(user.getName());
     }
 
-    @PostMapping(path = "/utilisateur")
+    @PostMapping(path = "/user/utilisateur")
     public Utilisateur addUserWithoutImage(@RequestBody Utilisateur u) {
         return service.addNewUser(u);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "/role")
+    @PostMapping(path = "/admin/role")
     public Role addRole(@RequestBody Role role) {
         return service.addNewRole(role);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "/addRoleToUser")
+    @PostMapping(path = "/admin/addRoleToUser")
     public void addRoleToUser(@RequestBody RoleUserForm form) {
-        service.addRoleToUser(form.getEmail(),form.getRole());
+        service.addRoleToUser(form.getEmail(), form.getRole());
     }
 
-    @PostMapping(path = "/passwordForgotten")
-    public ResponseEntity<?> changePassword(Principal user, @RequestBody PasswordChangeForm passwordChangeForm){
-        Utilisateur utils=service.loadUserByUsername(user.getName());
+    @PostMapping(path = "/user/passwordForgotten")
+    public ResponseEntity<?> changePassword(Principal user, @RequestBody PasswordChangeForm passwordChangeForm) {
+        Utilisateur utils = service.loadUserByUsername(user.getName());
         System.out.println(user.getName());
-        if(service.checkPassword(user.getName(),passwordChangeForm.getOldPassword())){
+        if (service.checkPassword(user.getName(), passwordChangeForm.getOldPassword())) {
             utils.setPassword(passwordChangeForm.getNewPassword());
-            service.addNewUser(utils);
+            utilisateurRepo.save(utils);
             return ResponseEntity.status(HttpStatus.OK).body("Mot de passe chnagé avec succès");
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Action non autorisé");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "/utilisateur/{id}")
-    public Utilisateur modifyUtilisateur(@PathVariable Long id,@RequestBody Utilisateur u){
+    @PutMapping(path = "/admin/utilisateur/{id}")
+    public Utilisateur modifyUtilisateur(@PathVariable Long id, @RequestBody Utilisateur u) {
         u.setId(id);
         return utilisateurRepo.save(u);
     }
 
-    @PutMapping(path = "/updateLogged")
-    public Utilisateur modifyLoggedUser(Principal principal,@RequestBody Utilisateur u){
-        Utilisateur user=service.loadUserByUsername(principal.getName());
+    @PutMapping(path = "/user/updateLogged")
+    public Utilisateur modifyLoggedUser(Principal principal, @RequestBody Utilisateur u) {
+        Utilisateur user = service.loadUserByUsername(principal.getName());
         u.setId(user.getId());
         return utilisateurRepo.save(u);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(path = "/utilisateur/{id}")
-    public void deleteUser(@PathVariable Long id){
+    @DeleteMapping(path = "/admin/utilisateur/{id}")
+    public void deleteUser(@PathVariable Long id) {
         utilisateurRepo.deleteById(id);
     }
 
-    @DeleteMapping(path = "/deletelogged")
-    public void deleteLoggedUser(Principal principal){
-        Utilisateur user=service.loadUserByUsername(principal.getName());
+    @DeleteMapping(path = "/user/deletelogged")
+    public void deleteLoggedUser(Principal principal) {
+        Utilisateur user = service.loadUserByUsername(principal.getName());
         utilisateurRepo.deleteById(user.getId());
     }
 
@@ -177,14 +191,15 @@ public class UtilisateurController {
     }*/
 
 }
+
 @Data
-class RoleUserForm{
+class RoleUserForm {
     private String role;
     private String email;
 }
 
 @Data
-class PasswordChangeForm{
+class PasswordChangeForm {
     private String oldPassword;
     private String newPassword;
 }

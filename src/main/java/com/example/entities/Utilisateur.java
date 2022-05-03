@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.UUID;
+import java.util.Date;
 
 @Entity
 @Data @NoArgsConstructor @AllArgsConstructor @RequiredArgsConstructor
@@ -39,11 +39,11 @@ public class Utilisateur implements Serializable {
     @JsonIgnoreProperties({"fileName", "fileType","data"})
     private Attachment photoProfile;
     private final LocalDate dateCmpt = LocalDate.now();
-    private String token = UUID.randomUUID().toString();
-    private boolean enabled = false;
+    private String token;
     @NonNull
     private boolean isActive;
-    private boolean isVerified;
+    private boolean isVerified=false;
+    private long expireAt;
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<Role> Roles=new ArrayList<>();
 }

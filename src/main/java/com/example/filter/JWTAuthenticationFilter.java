@@ -40,6 +40,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        System.out.println("success");
         User user=(User) authResult.getPrincipal();
         Algorithm algorithm=Algorithm.HMAC256(JWTUtilities.SECRET);
         String access_token= JWT.create()
@@ -60,5 +61,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setContentType("application/json");
         System.out.println("success");
         new ObjectMapper().writeValue(response.getOutputStream(),tokens);
+        System.out.println("success success");
     }
 }
