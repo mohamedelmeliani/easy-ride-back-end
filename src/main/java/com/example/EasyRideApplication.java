@@ -22,7 +22,7 @@ public class EasyRideApplication  implements WebMvcConfigurer{
 	public static void main(String[] args) {
 		SpringApplication.run(EasyRideApplication.class, args);
 	}
-	/*@Bean
+	@Bean
 	CommandLineRunner start (UtilisateurService service){
 		return args -> {
 
@@ -36,7 +36,7 @@ public class EasyRideApplication  implements WebMvcConfigurer{
 				service.addRoleToUser("email1","ADMIN");
 				service.addRoleToUser("email2","USER");
 		};
-	}*/
+	}
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {

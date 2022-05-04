@@ -1,5 +1,6 @@
 package com.example.web;
 
+import com.example.dao.UtilisateurRepo;
 import com.example.entities.Attachment;
 import com.example.entities.Utilisateur;
 import com.example.service.AttachmentService;
@@ -23,6 +24,7 @@ public class AttachmentController {
 
     private AttachmentService attachmentService;
     private UtilisateurService service;
+    private UtilisateurRepo utilisateurRepo;
 
 
     @RequestMapping(path="/upload",method = {RequestMethod.POST,RequestMethod.PUT})
@@ -36,7 +38,7 @@ public class AttachmentController {
                 .path(attachment.getId())
                 .toUriString();
         utilisateur.setPhotoProfile(attachment);
-        service.addNewUser(utilisateur);
+        utilisateurRepo.save(utilisateur);
         return new ResponseData(attachment.getFileName(),
                 downloadURl,
                 file.getContentType(),
