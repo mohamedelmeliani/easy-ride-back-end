@@ -11,19 +11,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
 
 @SpringBootApplication
-public class EasyRideApplication  {
+public class EasyRideApplication  implements WebMvcConfigurer{
 	@Autowired
 	UtilisateurRepo repo;
 	public static void main(String[] args) {
 		SpringApplication.run(EasyRideApplication.class, args);
 	}
-	@Bean
+	/*@Bean
 	CommandLineRunner start (UtilisateurService service){
 		return args -> {
 
@@ -37,7 +36,25 @@ public class EasyRideApplication  {
 				service.addRoleToUser("email1","ADMIN");
 				service.addRoleToUser("email2","USER");
 		};
+	}*/
+
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/**")
+				.allowedOrigins(
+						"http://localhost:4200"
+				)
+				.allowedMethods(
+						"GET",
+						"PUT",
+						"POST",
+						"DELETE",
+						"PATCH",
+						"OPTIONS"
+				);
 	}
+
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
