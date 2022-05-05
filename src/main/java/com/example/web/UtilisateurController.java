@@ -32,11 +32,12 @@ public class UtilisateurController {
     private UtilisateurService service;
     private UtilisateurRepo utilisateurRepo;
 
-    @GetMapping(path = "/user/refreshToken")
+    @GetMapping(path = "/refreshToken")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authToken = request.getHeader(JWTUtilities.AUTH_HEADER);
         if (authToken != null && authToken.startsWith(JWTUtilities.PREFIX)) {
             try {
+                System.out.println("i m in try");
                 String jwt = authToken.substring(7);
                 Algorithm algorithm = Algorithm.HMAC256(JWTUtilities.SECRET);
                 JWTVerifier jwtVerifier = JWT.require(algorithm).build();
@@ -54,9 +55,10 @@ public class UtilisateurController {
                 tokens.put("access_token", access_token);
                 tokens.put("refresh_token", jwt);
                 response.setContentType("application/json");
-                System.out.println("success");
+                System.out.println("success try");
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             } catch (Exception e) {
+                System.out.println("i m in catch");
                 response.setHeader("Error_Message", e.getMessage());
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
             }
