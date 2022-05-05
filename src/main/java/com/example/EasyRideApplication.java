@@ -34,9 +34,9 @@ public class EasyRideApplication  implements WebMvcConfigurer{
 						,"test","test","test","test","email1","test",false));
 				service.addNewUser(new Utilisateur("mohamed", LocalDate.of(2001,7,11)
 						,"test","test","test","test","email2","test",false));
-				service.addRoleToUser("email1","USER");
+				/*service.addRoleToUser("email1","USER");
+				service.addRoleToUser("email2","USER");*/
 				service.addRoleToUser("email1","ADMIN");
-				service.addRoleToUser("email2","USER");
 		};
 	}
 

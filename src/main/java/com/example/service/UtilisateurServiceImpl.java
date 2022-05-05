@@ -22,6 +22,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     public Utilisateur addNewUser(Utilisateur user) {
         try{
             user.setPassword(encoder.encode(user.getPassword()));
+            user.getRoles().add(roleRepo.findByName("USER"));
             return utilisateurRepo.save(user);
         }
         catch (ConstraintViolationException c){
