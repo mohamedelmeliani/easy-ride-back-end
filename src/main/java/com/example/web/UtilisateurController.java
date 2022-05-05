@@ -87,7 +87,7 @@ public class UtilisateurController {
 
     }
 
-    @GetMapping(path = "/user/generateToken")
+    @PostMapping(path = "/user/generateToken")
     public Utilisateur generateToken(Principal principal) {
         Utilisateur user = service.loadUserByUsername(principal.getName());
         user.setToken("" + ((int) (Math.random() * 9000) + 1000));
