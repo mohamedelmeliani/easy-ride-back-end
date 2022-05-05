@@ -32,7 +32,7 @@ public class UtilisateurController {
     private UtilisateurService service;
     private UtilisateurRepo utilisateurRepo;
 
-    @PostMapping(path = "/user/refreshToken")
+    @GetMapping(path = "/user/refreshToken")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authToken = request.getHeader(JWTUtilities.AUTH_HEADER);
         if (authToken != null && authToken.startsWith(JWTUtilities.PREFIX)) {
